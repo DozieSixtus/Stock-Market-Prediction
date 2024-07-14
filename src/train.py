@@ -3,7 +3,7 @@ import pandas as pd
 
 from prep import FeaturePreProcessing
 from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import root_mean_squared_error
 
@@ -34,14 +34,23 @@ bp_y = bp_data['Close']
 bp_x = bp_data.drop(columns=['Close','Date','year','High','Low','Adj Close'])
 
 # train test split
-bp_train_x, bp_test_x, bp_train_y, bp_test_y = train_test_split(bp_x, bp_y, shuffle=False, test_size=0.2, random_state=42)
+bp_train_x, bp_test_x, bp_train_y, bp_test_y = train_test_split(bp_x, bp_y, shuffle=True, test_size=0.2, random_state=42)
+#bp_train_x = bp_train_x.sample(random_state=42, ignore_index=True)
 
-rf_regr = RandomForestRegressor(n_estimators=100, random_state=0, verbose=2)
+rf_regr = RandomForestRegressor(n_estimators=100, random_state=0, verbose=0)
 rf_regr.fit(bp_train_x, bp_train_y)
 
 bp_pred = np.abs(rf_regr.predict(bp_test_x))
 error = root_mean_squared_error(bp_test_y, bp_pred)
 print("Inferencing with Random Forest model ...")
+print(f"The root mean squared error on the test data is {error}.")
+
+xgb_regr = GradientBoostingRegressor(n_estimators=100, random_state=0, verbose=0)
+xgb_regr.fit(bp_train_x, bp_train_y)
+
+bp_pred = np.abs(xgb_regr.predict(bp_test_x))
+error = root_mean_squared_error(bp_test_y, bp_pred)
+print("Inferencing with Gradient Boosting model ...")
 print(f"The root mean squared error on the test data is {error}.")
 
 linear_regr = LinearRegression()
@@ -64,7 +73,12 @@ azn_test = azn_data.drop(columns=['Close','Date','year','High','Low','Adj Close'
 
 azn_pred = np.abs(rf_regr.predict(azn_test))
 error = root_mean_squared_error(azn_y, azn_pred)
-print("Inferencing with Linear Regression model ...")
+print("Inferencing with Random Forest model ...")
+print(f"The root mean squared error on the test data is {error}.")
+
+azn_pred = np.abs(xgb_regr.predict(azn_test))
+error = root_mean_squared_error(azn_y, azn_pred)
+print("Inferencing with Gradient Boosting model ...")
 print(f"The root mean squared error on the test data is {error}.")
 
 azn_pred = np.abs(linear_regr.predict(azn_test))
