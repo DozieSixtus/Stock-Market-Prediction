@@ -40,14 +40,10 @@ bp_train_x, bp_test_x, bp_train_y, bp_test_y = train_test_split(bp_x, bp_y, shuf
 def nn_model():
     input = tf.keras.Input(shape=(None,1), name="input_data")
     x = tf.keras.layers.LSTM(256, activation="tanh", return_sequences = True)(input)
-    x = tf.keras.layers.Dropout(0.2)(x)
-    x = tf.keras.layers.LSTM(128, activation="tanh", return_sequences = True)(x)
-    x = tf.keras.layers.Dropout(0.2)(x)
+    x = tf.keras.layers.LSTM(256, activation="tanh", return_sequences = True)(x)
     #x = tf.keras.layers.MaxPooling2D(3)(x)
     x = tf.keras.layers.LSTM(128, activation="tanh", return_sequences = True)(x)
-    x = tf.keras.layers.Dropout(0.2)(x)
-    x = tf.keras.layers.LSTM(64, activation="relu")(x)
-    x = tf.keras.layers.Dropout(0.2)(x)
+    x = tf.keras.layers.LSTM(16, activation="relu")(x)
     #output = tf.keras.layers.GlobalMaxPooling2D()(x)
     output = tf.keras.layers.Dense(1)(x)
     model = tf.keras.Model(input, output, name="lstm_model")
@@ -59,12 +55,12 @@ tf.keras.utils.plot_model(model, "model_architecture.png", show_shapes=True)
 model.compile(
     loss=tf.keras.losses.MeanSquaredError(),
     optimizer=tf.keras.optimizers.Adam(),
-    metrics=[tf.keras.metrics.MeanSquaredError()],
+    metrics=['MAE'],
 )
-es = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=10, 
-                                   verbose=0, mode='min', start_from_epoch=50, restore_best_weights=True)
+es = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, 
+                                   verbose=0, mode='min', start_from_epoch=100, restore_best_weights=True)
 
-history = model.fit(bp_train_x, bp_train_y, batch_size=32, callbacks=[es], epochs=200, validation_split=0.2)
+history = model.fit(bp_train_x, bp_train_y, batch_size=64, callbacks=[es], epochs=200, validation_split=0.2)
 
 test_scores = model.evaluate(bp_test_x, bp_test_y, verbose=2)
 print("Test loss:", test_scores[0])
