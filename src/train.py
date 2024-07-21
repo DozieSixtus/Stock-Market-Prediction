@@ -85,3 +85,99 @@ azn_pred = np.abs(linear_regr.predict(azn_test))
 error = root_mean_squared_error(azn_y, azn_pred)
 print("Inferencing with Linear Regression model ...")
 print(f"The root mean squared error on the test data is {error}.")
+
+print(f"{'*'*50} \nTesting on barclays datasets\n{'*'*50}")
+azn_data = feature_eng(barc_data, lag_days=lag_days)
+
+# Replace nan values with 0
+azn_data = azn_data.fillna(0)
+
+azn_y = azn_data['Close']
+azn_test = azn_data.drop(columns=['Close','Date','year','High','Low','Adj Close'])
+
+azn_pred = np.abs(rf_regr.predict(azn_test))
+error = root_mean_squared_error(azn_y, azn_pred)
+print("Inferencing with Random Forest model ...")
+print(f"The root mean squared error on the test data is {error}.")
+
+azn_pred = np.abs(xgb_regr.predict(azn_test))
+error = root_mean_squared_error(azn_y, azn_pred)
+print("Inferencing with Gradient Boosting model ...")
+print(f"The root mean squared error on the test data is {error}.")
+
+azn_pred = np.abs(linear_regr.predict(azn_test))
+error = root_mean_squared_error(azn_y, azn_pred)
+print("Inferencing with Linear Regression model ...")
+print(f"The root mean squared error on the test data is {error}.")
+
+print(f"{'*'*50} \nTesting on rr datasets\n{'*'*50}")
+azn_data = feature_eng(rr_data, lag_days=lag_days)
+
+# Replace nan values with 0
+azn_data = azn_data.fillna(0)
+
+azn_y = azn_data['Close']
+azn_test = azn_data.drop(columns=['Close','Date','year','High','Low','Adj Close'])
+
+azn_pred = np.abs(rf_regr.predict(azn_test))
+error = root_mean_squared_error(azn_y, azn_pred)
+print("Inferencing with Random Forest model ...")
+print(f"The root mean squared error on the test data is {error}.")
+
+azn_pred = np.abs(xgb_regr.predict(azn_test))
+error = root_mean_squared_error(azn_y, azn_pred)
+print("Inferencing with Gradient Boosting model ...")
+print(f"The root mean squared error on the test data is {error}.")
+
+azn_pred = np.abs(linear_regr.predict(azn_test))
+error = root_mean_squared_error(azn_y, azn_pred)
+print("Inferencing with Linear Regression model ...")
+print(f"The root mean squared error on the test data is {error}.")
+
+print(f"{'*'*50} \nTesting on tsco datasets\n{'*'*50}")
+azn_data = feature_eng(tsco_data, lag_days=lag_days)
+
+# Replace nan values with 0
+azn_data = azn_data.fillna(0)
+
+azn_y = azn_data['Close']
+azn_test = azn_data.drop(columns=['Close','Date','year','High','Low','Adj Close'])
+
+azn_pred = np.abs(rf_regr.predict(azn_test))
+error = root_mean_squared_error(azn_y, azn_pred)
+print("Inferencing with Random Forest model ...")
+print(f"The root mean squared error on the test data is {error}.")
+
+azn_pred = np.abs(xgb_regr.predict(azn_test))
+error = root_mean_squared_error(azn_y, azn_pred)
+print("Inferencing with Gradient Boosting model ...")
+print(f"The root mean squared error on the test data is {error}.")
+
+azn_pred = np.abs(linear_regr.predict(azn_test))
+error = root_mean_squared_error(azn_y, azn_pred)
+print("Inferencing with Linear Regression model ...")
+print(f"The root mean squared error on the test data is {error}.")
+
+print(f"{'*'*50} \nTesting on vod datasets\n{'*'*50}")
+azn_data = feature_eng(vod_data, lag_days=lag_days)
+
+# Replace nan values with 0
+azn_data = azn_data.fillna(0)
+
+azn_y = azn_data['Close']
+azn_test = azn_data.drop(columns=['Close','Date','year','High','Low','Adj Close'])
+
+azn_pred = np.abs(rf_regr.predict(azn_test))
+error = root_mean_squared_error(azn_y, azn_pred)
+print("Inferencing with Random Forest model ...")
+print(f"The root mean squared error on the test data is {error}.")
+
+azn_pred = np.abs(xgb_regr.predict(azn_test))
+error = root_mean_squared_error(azn_y, azn_pred)
+print("Inferencing with Gradient Boosting model ...")
+print(f"The root mean squared error on the test data is {error}.")
+
+azn_pred = np.abs(linear_regr.predict(azn_test))
+error = root_mean_squared_error(azn_y, azn_pred)
+print("Inferencing with Linear Regression model ...")
+print(f"The root mean squared error on the test data is {error}.")
