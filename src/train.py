@@ -80,7 +80,8 @@ for train_name, train in training_data.items():
     rf_regr.fit(train_x, train_y)
 
     pred = np.abs(rf_regr.predict(test_x))
-    error = root_mean_squared_error(test_y, pred)
+    pred = o_scaler.inverse_transform(pred)
+    error = root_mean_squared_error(o_scaler.inverse_transform(test_y), pred)
     print("Inferencing with Random Forest model ...")
     print(f"The root mean squared error on the test data is {error}.")
 
@@ -88,7 +89,8 @@ for train_name, train in training_data.items():
     xgb_regr.fit(train_x, train_y)
 
     pred = np.abs(xgb_regr.predict(test_x))
-    error = root_mean_squared_error(test_y, pred)
+    pred = o_scaler.inverse_transform(pred)
+    error = root_mean_squared_error(o_scaler.inverse_transform(test_y), pred)
     print("Inferencing with Gradient Boosting model ...")
     print(f"The root mean squared error on the test data is {error}.")
 
@@ -96,7 +98,8 @@ for train_name, train in training_data.items():
     linear_regr.fit(train_x, train_y)
 
     pred = np.abs(linear_regr.predict(test_x))
-    error = root_mean_squared_error(test_y, pred)
+    pred = o_scaler.inverse_transform(pred)
+    error = root_mean_squared_error(o_scaler.inverse_transform(test_y), pred)
     print("Inferencing with Linear Regression model ...")
     print(f"The root mean squared error on the test data is {error}.")
 
