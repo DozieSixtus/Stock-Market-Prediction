@@ -6,6 +6,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import root_mean_squared_error
+from sklearn.preprocessing import StandardScaler
 
 # Read training stock data files
 bp_data = pd.read_excel(r'.\data\training\BP.L_filtered.xlsx')
@@ -43,17 +44,36 @@ for train_name, train in training_data.items():
     print(f"Training on {train_name} ...")
     print("="*50)
     train = train.copy()
+    train['Adj Close'] = np.log(train['Adj Close'])
     train = feature_eng(train, lag_days=lag_days)
 
     # Replace nan values with 0
     train = train.fillna(0)
+    train = train.drop(columns=['Close','Date','year','High','Low','Open','Volume'])
 
+    # train columns
+    cols = train.columns.tolist()
+    feature_cols = set(cols)-set(['month','day','day_of_year','Adj Close'])
+    feature_cols = list(feature_cols)
 
-    train_y = train['Close']
-    train_x = train.drop(columns=['Close','Date','year','High','Low','Adj Close'])
+    # scale train and test
+    input_scaler = StandardScaler()
+    train[feature_cols] = input_scaler.fit_transform(train[feature_cols])
+
+    # scale output values
+    output_scaler = StandardScaler()
+    output_scaler.fit(train[['Adj Close']])
+
+    train_y = output_scaler.transform(train[['Adj Close']])
+    train_x = train.drop(columns=['Adj Close'])
 
     # train test split
     train_x, test_x, train_y, test_y = train_test_split(train_x, train_y, shuffle=True, test_size=0.2, random_state=42)
+
+
+    # train_x = scaler.transform(train_x)
+    # test_x = scaler.transform(test_x)
+
     #train_x = train_x.sample(random_state=42, ignore_index=True)
 
     rf_regr = RandomForestRegressor(n_estimators=100, random_state=0, verbose=0)
@@ -88,25 +108,40 @@ for train_name, train in training_data.items():
         print(f"Testing on {test_name}")
 
         test = test.copy()
+        test['Adj Close'] = np.log(test['Adj Close'])
         test = feature_eng(test, lag_days=lag_days)
 
         # Replace nan values with 0
         test = test.fillna(0)
+        test = test.drop(columns=['Close','Date','year','High','Low','Open','Volume'])
 
-        test_y = test['Close']
-        test_x = test.drop(columns=['Close','Date','year','High','Low','Adj Close'])
+        i_scaler = StandardScaler()
+        test[feature_cols] = i_scaler.fit_transform(test[feature_cols])
+
+        # scale output values
+        o_scaler = StandardScaler()
+        o_scaler.fit(test[['Adj Close']])
+
+        test_y = test[['Adj Close']]
+        test_x = test.drop(columns=['Adj Close'])
 
         pred = np.abs(rf_regr.predict(test_x))
+        pred = o_scaler.inverse_transform(pred.reshape(-1,1))
+        pred = np.exp(pred)
         error = root_mean_squared_error(test_y, pred)
         print("Inferencing with Random Forest model ...")
         print(f"The root mean squared error on the test data is {error}.")
 
         pred = np.abs(xgb_regr.predict(test_x))
-        error = root_mean_squared_error(test_y, pred)
+        pred = o_scaler.inverse_transform(pred.reshape(-1,1))
+        error = root_mean_squared_error(np.exp(o_scaler.inverse_transform(test_y)), np.exp(pred))       
         print("Inferencing with Gradient Boosting model ...")
         print(f"The root mean squared error on the test data is {error}.")
 
         pred = np.abs(linear_regr.predict(test_x))
-        error = root_mean_squared_error(test_y, pred)
+        pred = o_scaler.inverse_transform(pred.reshape(-1,1))
+        error = root_mean_squared_error(np.exp(o_scaler.inverse_transform(test_y)), np.exp(pred))
         print("Inferencing with Linear Regression model ...")
         print(f"The root mean squared error on the test data is {error}.")
+
+pass

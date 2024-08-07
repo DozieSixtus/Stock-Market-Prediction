@@ -59,16 +59,16 @@ class FeaturePreProcessing():
 
         # Calculate range from columns
         self.train_col_range = self.column_range(self.train_data, groupby_cols=['year'],
-                                                 grad_cols=['Open','High','Low','Close','Adj Close','Volume'])
+                                                 grad_cols=['Adj Close'])
         
         # Calculate stats from fields
         self.train_stat = self.data_stats(self.train_data, 
-                                          stats_cols=['Open','High','Low','Close','Adj Close','Volume'],
+                                          stats_cols=['Adj Close'],
                                           groupby_cols=['year'])
         
         # Lag train data by n days
         self.train_lagged = self.lag_train_data(self.train_data, 
-                                                target=['Open','High','Low','Close','Adj Close','Volume'],
+                                                target=['Adj Close'],
                                                 lag_days=self.lag_days)
         
         return self.train_lagged
