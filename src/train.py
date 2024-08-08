@@ -6,7 +6,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import root_mean_squared_error
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, RobustScaler
 
 # Read training stock data files
 bp_data = pd.read_excel(r'.\data\training\BP.L_filtered.xlsx')
@@ -37,7 +37,7 @@ test_data = {'azn': azn_data
             }
 
 feature_eng = FeaturePreProcessing()
-lag_days = 5
+lag_days = 3
 
 for train_name, train in training_data.items():
     print("="*50)
@@ -57,14 +57,14 @@ for train_name, train in training_data.items():
     feature_cols = list(feature_cols)
 
     # scale train and test
-    input_scaler = StandardScaler()
-    train[feature_cols] = input_scaler.fit_transform(train[feature_cols])
+    train_input_scaler = RobustScaler()
+    train[feature_cols] = train_input_scaler.fit_transform(train[feature_cols])
 
     # scale output values
-    output_scaler = StandardScaler()
-    output_scaler.fit(train[['Adj Close']])
+    train_output_scaler = RobustScaler()
+    train_output_scaler.fit(train[['Adj Close']])
 
-    train_y = output_scaler.transform(train[['Adj Close']])
+    train_y = train_output_scaler.transform(train[['Adj Close']])
     train_x = train.drop(columns=['Adj Close'])
 
     # train test split
@@ -76,21 +76,23 @@ for train_name, train in training_data.items():
 
     #train_x = train_x.sample(random_state=42, ignore_index=True)
 
-    rf_regr = RandomForestRegressor(n_estimators=100, random_state=0, verbose=0)
+    rf_regr = RandomForestRegressor(n_estimators=200, random_state=0, verbose=0)
     rf_regr.fit(train_x, train_y)
 
     pred = np.abs(rf_regr.predict(test_x))
-    pred = o_scaler.inverse_transform(pred)
-    error = root_mean_squared_error(o_scaler.inverse_transform(test_y), pred)
+    pred = train_output_scaler.inverse_transform(pred.reshape(-1,1))
+    pred = np.exp(pred)
+    error = root_mean_squared_error(np.exp(train_output_scaler.inverse_transform(test_y)), pred)
     print("Inferencing with Random Forest model ...")
     print(f"The root mean squared error on the test data is {error}.")
 
-    xgb_regr = GradientBoostingRegressor(n_estimators=100, random_state=0, verbose=0)
+    xgb_regr = GradientBoostingRegressor(n_estimators=200, random_state=0, verbose=0)
     xgb_regr.fit(train_x, train_y)
 
     pred = np.abs(xgb_regr.predict(test_x))
-    pred = o_scaler.inverse_transform(pred)
-    error = root_mean_squared_error(o_scaler.inverse_transform(test_y), pred)
+    pred = train_output_scaler.inverse_transform(pred.reshape(-1,1))
+    pred = np.exp(pred)
+    error = root_mean_squared_error(np.exp(train_output_scaler.inverse_transform(test_y)), pred)
     print("Inferencing with Gradient Boosting model ...")
     print(f"The root mean squared error on the test data is {error}.")
 
@@ -98,8 +100,9 @@ for train_name, train in training_data.items():
     linear_regr.fit(train_x, train_y)
 
     pred = np.abs(linear_regr.predict(test_x))
-    pred = o_scaler.inverse_transform(pred)
-    error = root_mean_squared_error(o_scaler.inverse_transform(test_y), pred)
+    pred = train_output_scaler.inverse_transform(pred.reshape(-1,1))
+    pred = np.exp(pred)
+    error = root_mean_squared_error(np.exp(train_output_scaler.inverse_transform(test_y)), pred)
     print("Inferencing with Linear Regression model ...")
     print(f"The root mean squared error on the test data is {error}.")
 
@@ -118,32 +121,32 @@ for train_name, train in training_data.items():
         test = test.fillna(0)
         test = test.drop(columns=['Close','Date','year','High','Low','Open','Volume'])
 
-        i_scaler = StandardScaler()
-        test[feature_cols] = i_scaler.fit_transform(test[feature_cols])
+        test_input_scaler = RobustScaler()
+        test[feature_cols] = test_input_scaler.fit_transform(test[feature_cols])
 
         # scale output values
-        o_scaler = StandardScaler()
-        o_scaler.fit(test[['Adj Close']])
+        test_output_scaler = RobustScaler()
+        test_output_scaler.fit(test[['Adj Close']])
 
-        test_y = test[['Adj Close']]
+        test_y = np.exp(test['Adj Close'])
         test_x = test.drop(columns=['Adj Close'])
 
         pred = np.abs(rf_regr.predict(test_x))
-        pred = o_scaler.inverse_transform(pred.reshape(-1,1))
+        pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         pred = np.exp(pred)
         error = root_mean_squared_error(test_y, pred)
         print("Inferencing with Random Forest model ...")
         print(f"The root mean squared error on the test data is {error}.")
 
         pred = np.abs(xgb_regr.predict(test_x))
-        pred = o_scaler.inverse_transform(pred.reshape(-1,1))
-        error = root_mean_squared_error(np.exp(o_scaler.inverse_transform(test_y)), np.exp(pred))       
+        pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
+        error = root_mean_squared_error(test_y, np.exp(pred))       
         print("Inferencing with Gradient Boosting model ...")
         print(f"The root mean squared error on the test data is {error}.")
 
         pred = np.abs(linear_regr.predict(test_x))
-        pred = o_scaler.inverse_transform(pred.reshape(-1,1))
-        error = root_mean_squared_error(np.exp(o_scaler.inverse_transform(test_y)), np.exp(pred))
+        pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
+        error = root_mean_squared_error(test_y, np.exp(pred))
         print("Inferencing with Linear Regression model ...")
         print(f"The root mean squared error on the test data is {error}.")
 
