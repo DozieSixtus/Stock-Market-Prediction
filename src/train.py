@@ -37,7 +37,7 @@ test_data = {'azn': azn_data
             }
 
 feature_eng = FeaturePreProcessing()
-lag_days = 3
+lag_days = 5
 
 for train_name, train in training_data.items():
     print("="*50)
@@ -68,41 +68,41 @@ for train_name, train in training_data.items():
     train_x = train.drop(columns=['Adj Close'])
 
     # train test split
-    train_x, test_x, train_y, test_y = train_test_split(train_x, train_y, shuffle=True, test_size=0.2, random_state=42)
+    train_x, val_x, train_y, val_y = train_test_split(train_x, train_y, shuffle=True, test_size=0.2, random_state=42)
 
 
     # train_x = scaler.transform(train_x)
-    # test_x = scaler.transform(test_x)
+    # val_x = scaler.transform(val_x)
 
     #train_x = train_x.sample(random_state=42, ignore_index=True)
 
     rf_regr = RandomForestRegressor(n_estimators=200, random_state=0, verbose=0)
     rf_regr.fit(train_x, train_y)
 
-    pred = np.abs(rf_regr.predict(test_x))
+    pred = rf_regr.predict(val_x)
     pred = train_output_scaler.inverse_transform(pred.reshape(-1,1))
     pred = np.exp(pred)
-    error = root_mean_squared_error(np.exp(train_output_scaler.inverse_transform(test_y)), pred)
+    error = root_mean_squared_error(np.exp(train_output_scaler.inverse_transform(val_y)), pred)
     print("Inferencing with Random Forest model ...")
     print(f"The root mean squared error on the test data is {error}.")
 
     xgb_regr = GradientBoostingRegressor(n_estimators=200, random_state=0, verbose=0)
     xgb_regr.fit(train_x, train_y)
 
-    pred = np.abs(xgb_regr.predict(test_x))
+    pred = xgb_regr.predict(val_x)
     pred = train_output_scaler.inverse_transform(pred.reshape(-1,1))
     pred = np.exp(pred)
-    error = root_mean_squared_error(np.exp(train_output_scaler.inverse_transform(test_y)), pred)
+    error = root_mean_squared_error(np.exp(train_output_scaler.inverse_transform(val_y)), pred)
     print("Inferencing with Gradient Boosting model ...")
     print(f"The root mean squared error on the test data is {error}.")
 
     linear_regr = LinearRegression()
     linear_regr.fit(train_x, train_y)
 
-    pred = np.abs(linear_regr.predict(test_x))
+    pred = linear_regr.predict(val_x)
     pred = train_output_scaler.inverse_transform(pred.reshape(-1,1))
     pred = np.exp(pred)
-    error = root_mean_squared_error(np.exp(train_output_scaler.inverse_transform(test_y)), pred)
+    error = root_mean_squared_error(np.exp(train_output_scaler.inverse_transform(val_y)), pred)
     print("Inferencing with Linear Regression model ...")
     print(f"The root mean squared error on the test data is {error}.")
 
@@ -131,20 +131,20 @@ for train_name, train in training_data.items():
         test_y = np.exp(test['Adj Close'])
         test_x = test.drop(columns=['Adj Close'])
 
-        pred = np.abs(rf_regr.predict(test_x))
+        pred = rf_regr.predict(test_x)
         pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         pred = np.exp(pred)
         error = root_mean_squared_error(test_y, pred)
         print("Inferencing with Random Forest model ...")
         print(f"The root mean squared error on the test data is {error}.")
 
-        pred = np.abs(xgb_regr.predict(test_x))
+        pred = xgb_regr.predict(test_x)
         pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         error = root_mean_squared_error(test_y, np.exp(pred))       
         print("Inferencing with Gradient Boosting model ...")
         print(f"The root mean squared error on the test data is {error}.")
 
-        pred = np.abs(linear_regr.predict(test_x))
+        pred = linear_regr.predict(test_x)
         pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         error = root_mean_squared_error(test_y, np.exp(pred))
         print("Inferencing with Linear Regression model ...")
