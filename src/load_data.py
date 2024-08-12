@@ -78,7 +78,7 @@ filtered_dfs = {
     'HSBA.L_filtered.xlsx': hsba_filtered
 }
 
-# Save to new Excel files in Colab directory
+# Save to new Excel files in directory
 for file_name, df in filtered_dfs.items():
     df.to_excel(fr'.\data\training\{file_name}', index=False)
     print(f'Saved {file_name}.')
@@ -121,7 +121,7 @@ barc_filtered = barc_df[barc_df['Date'].isin(common_dates)].sort_values(by='Date
 rr_filtered = rr_df[rr_df['Date'].isin(common_dates)].sort_values(by='Date').reset_index(drop=True)
 tsco_filtered = tsco_df[tsco_df['Date'].isin(common_dates)].sort_values(by='Date').reset_index(drop=True)
 
-# Save the filtered data back to Excel files in Colab directory
+# Save the filtered data back to Excel files in directory
 azn_filtered_path = '.\\data\\testing\\AZN.L_filtered.xlsx'
 vod_filtered_path = '.\\data\\testing\\VOD.L_filtered.xlsx'
 barc_filtered_path = '.\\data\\testing\\BARC.L_filtered.xlsx'
