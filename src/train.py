@@ -72,7 +72,7 @@ for train_name, train in training_data.items():
     # change feature_cols to list object
     feature_cols = list(feature_cols)
 
-    # scale train and test input
+    # scale train input
     train_input_scaler = RobustScaler()
     train[feature_cols] = train_input_scaler.fit_transform(train[feature_cols])
 
@@ -135,7 +135,13 @@ for train_name, train in training_data.items():
         print(f"Testing on {test_name}")
 
         test = test.copy()
+
         test['Adj Close'] = np.log(test['Adj Close'])
+
+        # scale data on test adj close columns
+        test_output_scaler = RobustScaler()
+        test_output_scaler.fit(test[['Adj Close']])
+
         test = feature_eng(test, lag_days=lag_days)
 
         # Replace nan values with 0
@@ -151,7 +157,7 @@ for train_name, train in training_data.items():
 
         # Evaluate random forest model on 20% of training data split (test_x, test_y)
         pred = rf_regr.predict(test_x)
-        pred = train_output_scaler.inverse_transform(pred.reshape(-1,1))
+        pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         pred = np.exp(pred)
         error = root_mean_squared_error(test_y, pred)
         print("Inferencing with Random Forest model ...")
@@ -159,14 +165,14 @@ for train_name, train in training_data.items():
 
         # Evaluate gradient boosting model on 20% of training data split (test_x, test_y)
         pred = xgb_regr.predict(test_x)
-        pred = train_output_scaler.inverse_transform(pred.reshape(-1,1))
+        pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         error = root_mean_squared_error(test_y, np.exp(pred))       
         print("Inferencing with Gradient Boosting model ...")
         print(f"The root mean squared error on the test data is {error}.")
 
         # Evaluate linear regression model on 20% of training data split (test_x, test_y)
         pred = linear_regr.predict(test_x)
-        pred = train_output_scaler.inverse_transform(pred.reshape(-1,1))
+        pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         error = root_mean_squared_error(test_y, np.exp(pred))
         print("Inferencing with Linear Regression model ...")
         print(f"The root mean squared error on the test data is {error}.")
