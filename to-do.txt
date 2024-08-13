@@ -1,4 +1,4 @@
-1. Add mean absolute error to machine learning models.
-2. Change mse to rmse in lstm models 
+1. Add mean absolute error to machine learning models.(done)
+2. Change mse to rmse in lstm models (done)
 3. Make line graphs for predictions (this)
 4. Move neural network to train.py (done)
