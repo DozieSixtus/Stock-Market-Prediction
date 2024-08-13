@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 
 from prep import FeaturePreProcessing
+from nn_train import nn_model
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
@@ -127,6 +129,23 @@ for train_name, train in training_data.items():
     print("Inferencing with Linear Regression model ...")
     print(f"The root mean squared error on the test data is {error}.")
 
+    # Train LSTM model
+    model = nn_model()
+    tf.keras.utils.plot_model(model, "model_architecture.png", show_shapes=True)
+    model.compile(
+        loss=tf.keras.losses.MeanSquaredError(),
+        optimizer=tf.keras.optimizers.Adam(),
+        metrics=['MAE'],
+    )
+    es = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, 
+                                    verbose=0, mode='min', start_from_epoch=100, restore_best_weights=True)
+
+    history = model.fit(train_x, train_y, batch_size=64, callbacks=[es], epochs=200, validation_split=0.2, verbose=0)
+
+    val_scores = model.evaluate(val_x, val_y, verbose=2)
+    print("Test mean squared error:", val_scores[0])
+    print("Test mean absolute error:", val_scores[1])
+
     # Test models on test data
     print(f"{'*'*50} \nTesting on test datasets\n{'*'*50}")
 
@@ -155,7 +174,7 @@ for train_name, train in training_data.items():
         test_y = np.exp(test['Adj Close'])
         test_x = test.drop(columns=['Adj Close'])
 
-        # Evaluate random forest model on 20% of training data split (test_x, test_y)
+        # Evaluate random forest model on test data (test_x, test_y)
         pred = rf_regr.predict(test_x)
         pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         pred = np.exp(pred)
@@ -163,15 +182,22 @@ for train_name, train in training_data.items():
         print("Inferencing with Random Forest model ...")
         print(f"The root mean squared error on the test data is {error}.")
 
-        # Evaluate gradient boosting model on 20% of training data split (test_x, test_y)
+        # Evaluate gradient boosting model on test data (test_x, test_y)
         pred = xgb_regr.predict(test_x)
         pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         error = root_mean_squared_error(test_y, np.exp(pred))       
         print("Inferencing with Gradient Boosting model ...")
         print(f"The root mean squared error on the test data is {error}.")
 
-        # Evaluate linear regression model on 20% of training data split (test_x, test_y)
+        # Evaluate linear regression model on test data (test_x, test_y)
         pred = linear_regr.predict(test_x)
+        pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
+        error = root_mean_squared_error(test_y, np.exp(pred))
+        print("Inferencing with Linear Regression model ...")
+        print(f"The root mean squared error on the test data is {error}.")
+
+        # Evaluate LSTM model on test data (test_x, test_y)
+        pred = model.predict(test_x, verbose=0)
         pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         error = root_mean_squared_error(test_y, np.exp(pred))
         print("Inferencing with Linear Regression model ...")
