@@ -172,6 +172,10 @@ for train_name, train in training_data.items():
 
         test = test.copy()
 
+        # create prediction data
+        pred_df = test[['Date','Adj Close']]
+        pred_df.rename(columns={'Adj Close': 'y_true'}, inplace=True)
+
         test['Adj Close'] = np.log(test['Adj Close'])
 
         # scale data on test adj close columns
@@ -195,7 +199,7 @@ for train_name, train in training_data.items():
         pred = rf_regr.predict(test_x)
         pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         pred = np.exp(pred)
-        pred_df = pd.DataFrame([test_y, pred], columns=['y_true','y_pred'])
+        pred_df['y_pred'] = pred
         plot_predictions(pred_df, train_name, test_name, 'randomForest')
         rms_error = root_mean_squared_error(test_y, pred)
         ma_error = mean_absolute_error(test_y, pred)
@@ -207,7 +211,7 @@ for train_name, train in training_data.items():
         pred = xgb_regr.predict(test_x)
         pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         pred = np.exp(pred)
-        pred_df = pd.DataFrame([test_y, pred], columns=['y_true','y_pred'])
+        pred_df['y_pred'] = pred
         plot_predictions(pred_df, train_name, test_name, 'XGBoost')
         rms_error = root_mean_squared_error(test_y, pred)
         ma_error = mean_absolute_error(test_y, pred)     
@@ -219,7 +223,7 @@ for train_name, train in training_data.items():
         pred = linear_regr.predict(test_x)
         pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         pred = np.exp(pred)
-        pred_df = pd.DataFrame([test_y, pred], columns=['y_true','y_pred'])
+        pred_df['y_pred'] = pred
         plot_predictions(pred_df, train_name, test_name, 'linearRegression')
         rms_error = root_mean_squared_error(test_y, pred)
         ma_error = mean_absolute_error(test_y, pred)
@@ -231,7 +235,7 @@ for train_name, train in training_data.items():
         pred = model.predict(test_x, verbose=0)
         pred = test_output_scaler.inverse_transform(pred.reshape(-1,1))
         pred = np.exp(pred)
-        pred_df = pd.DataFrame([test_y, pred], columns=['y_true','y_pred'])
+        pred_df['y_pred'] = pred
         plot_predictions(pred_df, train_name, test_name, 'LSTM')
         rms_error = root_mean_squared_error(test_y, pred)
         ma_error = mean_absolute_error(test_y, pred)
